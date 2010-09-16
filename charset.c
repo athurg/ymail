@@ -10,6 +10,7 @@ int convert_to_utf8(char * s_charset, char *src, char *dest)
 	iconv_t cd;
 	unsigned int src_len=0, dest_len=0;
 	int ret;
+	char *p;
 
 	//utf8使用1～3个字节表示一个字符
 	//GBK使用2个字节表示一个汉字
@@ -18,12 +19,8 @@ int convert_to_utf8(char * s_charset, char *src, char *dest)
 	dest_len = src_len*3;
 
 	cd = iconv_open("utf-8", s_charset);
-
-	if(iconv(cd, &src, &src_len, &dest, &dest_len) == -1)
-		perror("Error iconv");
-
+	ret = iconv(cd, &src, &src_len, &dest, &dest_len);
 	iconv_close(cd);
-
 	dest[0]='\0';
 
 	return ret;

@@ -76,7 +76,11 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 
 					g_base64_decode_inplace(name, &len);
 					name[len]='\0';
-					convert_to_utf8(charset, name, name);
+
+					// 如果不是utf-8编码，就需要转下
+					if (strcasecmp(charset,"utf-8")) {
+						convert_to_utf8(charset, name, name);
+					}
 				}
 				break;
 
