@@ -8,25 +8,25 @@
 #include <glib.h>
 
 
-int parse_header(FILE * fp, char * name, char *addr, char *subject, char *date)
+int parse_header(FILE * fp, struct mail_hdr * hdr)
 {
-	char buff[1024];
+	char name[100]={0}, addr[100]={0}, subject[200]={0};
+	char buff[100];
 	char header=0;
 	int ret=MSG_STATUS_NEWRCV;
-	struct tm time;
+	struct tm time={0};
 	unsigned int content_length=0;
 
-	while(fgets(buff, sizeof(buff), fp) !=NULL){
-		if(buff[0]=='\r' || buff[0]=='\n')
-			continue;
-		else if (strncmp(buff, "From ", 5)==0)
+	// 跳过空行，检查邮件头部标志是否有效
+	while(1){
+		if (fgets(buff, sizeof(buff), fp) == NULL) {
+			return -1;	//End of the file
+		} else if (strncmp(buff, "From ", 5)==0) {
 			break;
-		else{
-			printf("Not a valid mailbox!\n");
-			return -1;
 		}
 	}
 
+	fgetpos(fp, &hdr->start_pos);
 	while(NULL!=fgets(buff, sizeof(buff), fp)){
 		char *p = buff;
 
@@ -98,9 +98,9 @@ int parse_header(FILE * fp, char * name, char *addr, char *subject, char *date)
 				break;
 
 			case 'D':
-				//strcpy(date, p);
 				strtime_to_tm(p, &time);
-				sprintf(date,"%d-%d-%d %d:%d:%d",
+				hdr->time = malloc(20);
+				sprintf(hdr->time,"%04d-%02d-%02d %02d:%02d:%02d",
 						time.tm_year,
 						time.tm_mon,
 						time.tm_mday,
@@ -127,7 +127,17 @@ int parse_header(FILE * fp, char * name, char *addr, char *subject, char *date)
 	// jump to the next message
 	fseek(fp, content_length, SEEK_CUR);
 
+	hdr->sender  = strdup(name);
+	hdr->email   = strdup(addr);
+	hdr->subject = strdup(subject);
 	return ret;
 }
 
+void free_mail_hdr(struct mail_hdr * hdr_p)
+{
+	free(hdr_p->sender);
+	free(hdr_p->email);
+	free(hdr_p->subject);
+	free(hdr_p->time);
+}
 
