@@ -95,7 +95,7 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="col_status">
                     <property name="sizing">autosize</property>
-                    <property name="title">&#x65F6;&#x95F4;</property>
+                    <property name="title">&#x72B6;&#x6001;</property>
                     <property name="alignment">0.029999999329447746</property>
                     <property name="sort_column_id">0</property>
                     <child>
@@ -109,7 +109,7 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="col_time">
                     <property name="sizing">autosize</property>
-                    <property name="title">&#x53D1;&#x4EF6;&#x4EBA;</property>
+                    <property name="title">&#x65F6;&#x95F4;</property>
                     <property name="sort_column_id">3</property>
                     <child>
                       <object class="GtkCellRendererText" id="renderer2"/>
@@ -122,7 +122,7 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="col_sender">
                     <property name="sizing">autosize</property>
-                    <property name="title">&#x4E3B;&#x9898;</property>
+                    <property name="title">&#x53D1;&#x4EF6;&#x4EBA;</property>
                     <property name="sort_order">descending</property>
                     <property name="sort_column_id">4</property>
                     <child>
@@ -136,7 +136,7 @@
                 <child>
                   <object class="GtkTreeViewColumn" id="col_subject">
                     <property name="sizing">autosize</property>
-                    <property name="title">&#x72B6;&#x6001;</property>
+                    <property name="title">&#x4E3B;&#x9898;</property>
                     <property name="alignment">0.029999999329447746</property>
                     <child>
                       <object class="GtkCellRendererText" id="renderer4"/>
