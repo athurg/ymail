@@ -43,6 +43,7 @@ void timer_cb(void)
 		GtkTreeIter iter;
 		int ret=0;
 		char strstat[10]={0};
+		char attach[10]={0};
 
 		ret = parse_header(mbox_fp, &hdr);
 
@@ -56,8 +57,23 @@ void timer_cb(void)
 			break;
 		}
 
+		if(hdr.type=='a')
+			strcpy(attach, "无附件");
+		else if(hdr.type=='m')
+			strcpy(attach, "有附件");
+		else if(hdr.type=='r')
+			strcpy(attach, "复合");
+		else
+			strcpy(attach, "未知");
+
 		gtk_list_store_append(list_store, &iter);
-		gtk_list_store_set(list_store, &iter, 0, strstat, 1, hdr.time, 2, hdr.sender, 3, hdr.subject,-1);
+		gtk_list_store_set(list_store, &iter,
+				0, strstat,
+				1, hdr.time,
+				2, hdr.sender,
+				3, hdr.subject,
+				4, attach,
+				-1);
 		free_mail_hdr(&hdr);
 	}
 

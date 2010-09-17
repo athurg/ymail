@@ -32,8 +32,8 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 
 		if(*p=='\n' || *p=='\r')
 			break;
-		else if(buff[0]=='\t'){
-			//有些字段可能包含多个行，续行的时候会以\t开头
+		else if(buff[0]=='\t' || buff[0]==' '){
+			//有些字段可能包含多个行，续行的时候会以TAB或者空格开头
 			header = header;
 			p += 1;
 		}else if(!strncmp(buff, "From: ", 6)){
@@ -48,6 +48,9 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 		}else if(!strncmp(buff, "Subject: ", 9)){
 			header='S';
 			p += 9;
+		}else if(!strncmp(buff, "Content-Type: ", 14)){
+			header='T';
+			p+=14;
 		}else if(!strncmp(buff, "Content-Length: ", 16)){
 			header='C';
 			p+=16;
@@ -106,14 +109,23 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 				hdr->time = malloc(20);
 				sprintf(hdr->time,"%04d-%02d-%02d %02d:%02d:%02d",
 						time.tm_year,
-						time.tm_mon,
-						time.tm_mday,
-						time.tm_hour,
-						time.tm_min,
-						time.tm_sec);
+						time.tm_mon+1,
+						time.tm_mday+1,
+						time.tm_hour+1,
+						time.tm_min+1,
+						time.tm_sec+1);
 				break;
 			case 'C':
 				sscanf(p,"%d", &content_length);
+				break;
+
+			case 'T'://邮件（附件）类型处理
+				if(!strcmp(p, "multipart/alternative; "))
+					hdr->type = 'a';
+				else if(!strcmp(p, "multipart/mixed; "))
+					hdr->type = 'm';
+				else if(!strcmp(p, "multipart/related; "))
+					hdr->type = 'r';
 				break;
 
 			case 's'://status
