@@ -135,11 +135,7 @@ int prog_init(int argc, char *argv[])
 	gtk_builder_connect_signals(builder, NULL);
 
 	tree_view= GTK_TREE_VIEW(gtk_builder_get_object(builder,"treeview"));
-	//gtk_tree_view_set_model(tree_view, model);
 	gtk_tree_view_set_model(tree_view, GTK_TREE_MODEL(list_store));
-
-	//释放Builder占用的内存（多达50M啊！！！）
-	g_object_unref(builder);
 
 	//定时每3秒刷新检测一次邮件
 	gtk_timeout_add(1000*3, (GtkFunction) refresh, NULL);
@@ -151,7 +147,6 @@ int main(int argc, char *argv[])
 
 
 	prog_init(argc, argv);
-
 
 	gtk_main();
 
