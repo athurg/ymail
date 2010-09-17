@@ -17,20 +17,29 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 	struct tm time={0};
 	unsigned int content_length=0;
 
+	hdr->h_size=0;
 	// 跳过空行，检查邮件头部标志是否有效
+	unsigned int i=0;
 	while(1){
-		if (fgets(buff, sizeof(buff), fp) == NULL) {
-			return -1;	//End of the file
-		} else if (strncmp(buff, "From ", 5)==0) {
+		bzero(buff, sizeof(buff));
+		if(feof(fp))
+			return -1;
+
+		fgets(buff, sizeof(buff), fp);
+		if (strncmp(buff, "From ", 5)==0) {
+			hdr->h_size += strlen(buff);
 			break;
 		}
 	}
 
-	fgetpos(fp, &hdr->start_pos);
-	while(NULL!=fgets(buff, sizeof(buff), fp)){
+	while(!feof(fp)){
+		bzero(buff, sizeof(buff));
+		fgets(buff, sizeof(buff), fp);
+		hdr->h_size += strlen(buff);
+
 		char *p = buff;
 
-		if(*p=='\n' || *p=='\r')
+		if(buff[0]=='\n' || buff[0]=='\r')
 			break;
 		else if(buff[0]=='\t' || buff[0]==' '){
 			//有些字段可能包含多个行，续行的时候会以TAB或者空格开头
@@ -61,6 +70,7 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 		str_replace(buff, '\r', ' ');
 		str_replace(buff, '\n', ' ');
 		str_replace(buff, '"', ' ');
+		//跳过行首的空格
 		while(*p==' ')	p++;
 
 		switch(header){
@@ -120,12 +130,22 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 				break;
 
 			case 'T'://邮件（附件）类型处理
-				if(!strcmp(p, "multipart/alternative; "))
+				if(!strcmp(p, "text/plain; "))
+					hdr->type = 'p';
+				else if(!strcmp(p, "multipart/alternative; "))
 					hdr->type = 'a';
 				else if(!strcmp(p, "multipart/mixed; "))
 					hdr->type = 'm';
 				else if(!strcmp(p, "multipart/related; "))
 					hdr->type = 'r';
+				else if(!strncmp(p, "boundary= ",10)){
+					char bdry_tmp[50]={0};
+					bdry_tmp[0]='-';
+					bdry_tmp[1]='-';
+					sscanf(p,"boundary= %s", bdry_tmp+2);
+					strcat(bdry_tmp, "--\n");
+					hdr->boundary = strdup(bdry_tmp);
+				}
 				break;
 
 			case 's'://status
@@ -140,12 +160,30 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 		}
 	}
 
-	// jump to the next message
-	fseek(fp, content_length, SEEK_CUR);
+	fpos_t pos;
+	fgetpos(fp,&pos);
+	//查找邮件的结束位置
+	hdr->c_size=0;
+	while(!feof(fp)){
+		fgets(buff, sizeof(buff), fp);
+		hdr->c_size += strlen(buff);
 
+		if (hdr->type!='p') {
+			if(!strcmp(buff, hdr->boundary)){
+				break;
+			}
+		} else {
+			if(buff[0]=='\r' || buff[0]=='\n')
+				break;
+		}
+	}
+
+	//返回时，应当保持在邮件头末尾处
+	fsetpos(fp,&pos);
 	hdr->sender  = strdup(name);
 	hdr->email   = strdup(addr);
 	hdr->subject = strdup(subject);
+
 	return ret;
 }
 
@@ -155,5 +193,6 @@ void free_mail_hdr(struct mail_hdr * hdr_p)
 	free(hdr_p->email);
 	free(hdr_p->subject);
 	free(hdr_p->time);
+	free(hdr_p->boundary);
 }
 

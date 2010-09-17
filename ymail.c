@@ -40,31 +40,16 @@ void release_liststore(void)
 
 int refresh(int type)
 {
-	static FILE *mbox_fp=NULL;
+	FILE *mbox_fp=NULL;
 
-	if(type){//整体刷新
-		if(mbox_fp!=NULL){
-			fclose(mbox_fp);
-			printf("重新打开文件。。。。。");
-		}
-		mbox_fp = fopen("/var/mail/athurg", "rb");
-		if(mbox_fp == NULL){
-			perror("打开邮箱失败");
-			return -1;
-		}
-		printf("整体刷新。。。。。");
-		gtk_list_store_clear(list_store);
-	}else{
-		if(mbox_fp==NULL){
-			mbox_fp = fopen("/var/mail/athurg", "rb");
-			if(mbox_fp == NULL){
-				perror("打开邮箱失败");
-				return -1;
-			}
-			printf("打开文件。。。。。");
-		}
-		printf("增量刷新。。。。。");
+	printf("刷新：");
+
+	mbox_fp = fopen("/var/mail/athurg", "rb");
+	if(mbox_fp == NULL){
+		perror("打开邮箱失败");
+		return -1;
 	}
+	gtk_list_store_clear(list_store);
 
 	for(int i=0; i<1000; i++){
 		struct mail_hdr hdr;
@@ -138,21 +123,39 @@ int prog_init(int argc, char *argv[])
 	gtk_tree_view_set_model(tree_view, GTK_TREE_MODEL(list_store));
 
 	//定时每3秒刷新检测一次邮件
-	gtk_timeout_add(1000*3, (GtkFunction) refresh, NULL);
+	//gtk_timeout_add(1000*3, (GtkFunction) refresh, NULL);
 }
 
+#define DEBUG
 int main(int argc, char *argv[])
 {
-	struct mail_hdr hdr={NULL};
-
-
+#ifndef DEBUG
 	prog_init(argc, argv);
 
+	refresh(1);
 	gtk_main();
+#else
 
-	//退出时释放内存
-	//g_object_unref(model);
+	FILE *mbox_fp;
+	struct mail_hdr hdr, hdr2;
+	char buff[1024];
+	unsigned long size=0;
 
+	mbox_fp = fopen("/var/mail/athurg", "rb");
+	parse_header(mbox_fp, &hdr);
+	size += hdr.h_size + hdr.c_size+1;
+
+	fclose(mbox_fp);
+
+	//printf("%d\t%d\t%d\t%c\t%s\n",i, hdr.h_size, hdr.c_size, hdr.type, hdr.subject);
+	mbox_fp = fopen("/var/mail/athurg", "rb");
+	fseek(mbox_fp, size, SEEK_CUR);
+	fgets(buff, 1024, mbox_fp);	printf("%s",buff);
+
+	fclose(mbox_fp);
+
+
+#endif
 	return 0;
 }
 

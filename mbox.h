@@ -13,8 +13,10 @@ struct mail_hdr{
 	char * email;
 	char * subject;
 	char * time;
-	int type;//'r'=>相关型（有附件，且附件与HTML正文相关）、'm'=>混合型（有附件）、'a'=>可选型（HTML和纯文本）
-	fpos_t start_pos;
+	char * boundary;
+	unsigned int type;//'r'=>相关型（有附件，且附件与HTML正文相关）、'm'=>混合型（有附件）、'a'=>可选型（HTML和纯文本）
+	size_t c_size;
+	size_t h_size;
 };
 
 int parse_header(FILE *fp, struct mail_hdr * hdr);
