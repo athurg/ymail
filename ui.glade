@@ -2,20 +2,6 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkListStore" id="liststore">
-    <columns>
-      <!-- column-name col_status -->
-      <column type="gchararray"/>
-      <!-- column-name col_time -->
-      <column type="gchararray"/>
-      <!-- column-name col_sender -->
-      <column type="gchararray"/>
-      <!-- column-name col_subject -->
-      <column type="gchararray"/>
-      <!-- column-name attach -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkWindow" id="main_window">
     <property name="visible">True</property>
     <property name="title" translatable="yes">&#x90AE;&#x4EF6;&#x5BA2;&#x6237;&#x7AEF;</property>
@@ -45,6 +31,24 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="gtk_main_quit"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="release">
+                        <property name="label" translatable="yes">&#x91CA;&#x653E;&#x5185;&#x5B58;</property>
+                        <property name="visible">True</property>
+                        <property name="image">image1</property>
+                        <property name="use_stock">False</property>
+                        <signal name="activate" handler="release_liststore"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="reload">
+                        <property name="label" translatable="yes">&#x91CD;&#x65B0;&#x8F7D;&#x5165;</property>
+                        <property name="visible">True</property>
+                        <property name="image">image2</property>
+                        <property name="use_stock">False</property>
+                        <signal name="activate" handler="refresh_all"/>
                       </object>
                     </child>
                   </object>
@@ -90,7 +94,6 @@
                 <property name="height_request">273</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="model">liststore</property>
                 <property name="headers_clickable">False</property>
                 <property name="search_column">0</property>
                 <property name="enable_grid_lines">both</property>
@@ -218,5 +221,13 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkImage" id="image1">
+    <property name="visible">True</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="stock">gtk-missing-image</property>
   </object>
 </interface>
