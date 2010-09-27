@@ -1,7 +1,9 @@
 PROG=ymail
 
+MAKEFLAGS += --silent
+
 CC := gcc
-CFLAGS = `pkg-config --cflags --libs gtk+-2.0` -std=gnu99 -export-dynamic #--shared
+CFLAGS = `pkg-config --cflags --libs libnotify` -std=gnu99 -export-dynamic
 SRCS=$(wildcard *.c)
 OBJS=${patsubst %.c,%.o,${SRCS}}
 

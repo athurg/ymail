@@ -13,25 +13,13 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 	char name[100]={0}, addr[100]={0}, subject[200]={0};
 	char buff[100];
 	char header=0;
-	int ret=MSG_STATUS_NEWRCV;
+	int ret=0;
 	struct tm time={0};
-	unsigned int content_length=0;
+
+	if(feof(fp))
+		return -1;
 
 	hdr->h_size=0;
-	// 跳过空行，检查邮件头部标志是否有效
-	unsigned int i=0;
-	while(1){
-		bzero(buff, sizeof(buff));
-		if(feof(fp))
-			return -1;
-
-		fgets(buff, sizeof(buff), fp);
-		if (strncmp(buff, "From ", 5)==0) {
-			hdr->h_size += strlen(buff);
-			break;
-		}
-	}
-
 	while(!feof(fp)){
 		bzero(buff, sizeof(buff));
 		fgets(buff, sizeof(buff), fp);
@@ -51,18 +39,12 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 		}else if(!strncmp(buff, "Date: ", 6)){
 			header='D';
 			p += 6;
-		}else if(!strncmp(buff, "Status: ", 8)){
-			header='s';
-			p += 8;
 		}else if(!strncmp(buff, "Subject: ", 9)){
 			header='S';
 			p += 9;
 		}else if(!strncmp(buff, "Content-Type: ", 14)){
 			header='T';
 			p+=14;
-		}else if(!strncmp(buff, "Content-Length: ", 16)){
-			header='C';
-			p+=16;
 		}else{
 			header=0;
 		}
@@ -125,9 +107,6 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 						time.tm_min+1,
 						time.tm_sec+1);
 				break;
-			case 'C':
-				sscanf(p,"%d", &content_length);
-				break;
 
 			case 'T'://邮件（附件）类型处理
 				if(!strcmp(p, "text/plain; "))
@@ -148,38 +127,11 @@ int parse_header(FILE * fp, struct mail_hdr * hdr)
 				}
 				break;
 
-			case 's'://status
-				if(NULL == strstr(p, "RO"))
-					ret = MSG_STATUS_READED;
-				else
-					ret = MSG_STATUS_UNREAD;
-				break;
-
 			default:
 				break;
 		}
 	}
 
-	fpos_t pos;
-	fgetpos(fp,&pos);
-	//查找邮件的结束位置
-	hdr->c_size=0;
-	while(!feof(fp)){
-		fgets(buff, sizeof(buff), fp);
-		hdr->c_size += strlen(buff);
-
-		if (hdr->type!='p') {
-			if(!strcmp(buff, hdr->boundary)){
-				break;
-			}
-		} else {
-			if(buff[0]=='\r' || buff[0]=='\n')
-				break;
-		}
-	}
-
-	//返回时，应当保持在邮件头末尾处
-	fsetpos(fp,&pos);
 	hdr->sender  = strdup(name);
 	hdr->email   = strdup(addr);
 	hdr->subject = strdup(subject);
@@ -194,5 +146,36 @@ void free_mail_hdr(struct mail_hdr * hdr_p)
 	free(hdr_p->subject);
 	free(hdr_p->time);
 	free(hdr_p->boundary);
+	free(hdr_p->filename);
+}
+
+
+char * decode(char *str)
+{
+	int len;
+	char utf8_buff[1024]={0};
+	char *p, *encode_type, *encode_str, *charset;
+
+	p = strdup(str);
+
+	charset = index(p, '?') + 1;
+	encode_type = index(charset, '?') + 1;
+	encode_str  = index(encode_type,'?') + 1;
+
+	str_replace(p, '?', '\0');
+
+	if (encode_type[0]=='B') {//BASE64
+		g_base64_decode_inplace(encode_str, &len);
+		encode_str[len]='\0';
+	}
+
+	if (0 == strcmp(charset, "gb2312")) {
+		convert_to_utf8(charset, encode_str, utf8_buff);
+	} else {
+
+	}
+	free(p);
+
+	return strdup(utf8_buff);
 }
 
