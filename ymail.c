@@ -199,7 +199,7 @@ void show_popup(unsigned int pos)
 	for(int i=0; i<max; i++){
 		lst = g_list_nth(list, pos + i);
 		hdr = lst->data;
-		g_string_append_printf(ntf_msg, "%s\n", hdr->subject);
+		g_string_append_printf(ntf_msg, "%s: %s\n", hdr->sender, hdr->subject);
 	}
 
 	// 添加通知区域提示信息
