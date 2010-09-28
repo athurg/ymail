@@ -21,17 +21,30 @@ int refresh(gpointer data);
 int mark_read(unsigned int pos, unsigned int max);
 
 /* 图形界面回调函数 */
+void config_submit_cb(GtkWidget *widget, gpointer data)
+{
+	GtkWidget *window;
+
+	window = GTK_WIDGET(gtk_builder_get_object(builder, "config_window"));
+	gtk_widget_hide(window);
+	g_debug("提交修改");
+}
+
 gboolean status_icon_button_press_cb(GtkStatusIcon *status_icon, GdkEventButton *event, gpointer user_data)
 {
 	GtkWidget *window;
 
 	if(event->button==1){
-		g_warning("左（1）键按下\n");
+		g_debug("左（1）键按下\n");
 	} else if(event->button==2){
-		g_warning("中（2）键按下\n系统退出");
+		g_debug("中（2）键按下\n系统退出");
 		gtk_main_quit();
+	} else if(event->button==3){
+		g_debug("右（2）键按下\n系统配置");
+		window = GTK_WIDGET(gtk_builder_get_object(builder, "config_window"));
+		gtk_widget_show(window);
 	} else {
-		g_warning("其他（%d）键按下\n系统退出", event->button);
+		g_debug("其他（%d）键按下\n系统退出", event->button);
 	}
 }
 
@@ -67,7 +80,7 @@ int mark_read(unsigned int pos, unsigned int max)
 	GList *lst;
 	FILE *fp, *hdr_fp;
 	struct mail_hdr *hdr;
-	unsigned int filename_cnt;
+	unsigned int filename_cnt=0;
 	char new_filename[100]={0};
 	char old_filename[100]={0};
 
@@ -228,7 +241,7 @@ int main(int argc, char **argv)
 	gtk_builder_connect_signals(builder, NULL);
 
 	status_icon = GTK_STATUS_ICON(gtk_builder_get_object(builder, "status_icon"));
-	ntf = notify_notification_new_with_status_icon("暂无邮件", "暂无邮件", "pidgin", status_icon);
+	ntf = notify_notification_new_with_status_icon("暂无邮件", "暂无邮件", NULL, status_icon);
 
 	refresh(NULL);
 	g_timeout_add_seconds(60, refresh, NULL);
