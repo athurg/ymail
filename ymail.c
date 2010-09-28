@@ -214,6 +214,10 @@ int main(int argc, char **argv)
 {
 	GtkStatusIcon *status_icon;
 
+	if (fork()) {
+		g_message("Running as a daemon!");
+		return 0;
+	}
 	gtk_init(&argc, &argv);
 
 	notify_init("p");
