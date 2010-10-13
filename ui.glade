@@ -2,13 +2,13 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy project-wide -->
+  <!-- interface-local-resource-path /usr/share/pixmaps -->
   <object class="GtkStatusIcon" id="status_icon">
-    <property name="pixbuf">icon.png</property>
+    <property name="file">/usr/share/icons/Faenza/status/scalable/notification-message-email.svg</property>
     <property name="has_tooltip">True</property>
-    <property name="tooltip_text">&#x6CA1;&#x6709;&#x90AE;&#x4EF6;</property>
-    <property name="tooltip_markup">&#x6CA1;&#x6709;&#x90AE;&#x4EF6;</property>
+    <property name="tooltip_text">&#x90AE;&#x4EF6;&#x68C0;&#x6D4B;&#x5668;</property>
     <property name="title">&#x90AE;&#x4EF6;&#x68C0;&#x6D4B;</property>
-    <signal name="button_press_event" handler="status_icon_button_press_cb"/>
+    <signal name="button_release_event" handler="status_icon_button_press_cb"/>
   </object>
   <object class="GtkWindow" id="config_window">
     <property name="title" translatable="yes">&#x914D;&#x7F6E;</property>
@@ -326,8 +326,8 @@
           <object class="GtkHBox" id="hbox1">
             <property name="visible">True</property>
             <child>
-              <object class="GtkButton" id="reset">
-                <property name="label" translatable="yes">&#x9ED8;&#x8BA4;</property>
+              <object class="GtkButton" id="cance">
+                <property name="label" translatable="yes">&#x53D6;&#x6D88;</property>
                 <property name="width_request">80</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -357,8 +357,8 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="cance">
-                <property name="label" translatable="yes">&#x53D6;&#x6D88;</property>
+              <object class="GtkButton" id="reset">
+                <property name="label" translatable="yes">&#x9ED8;&#x8BA4;</property>
                 <property name="width_request">80</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -366,7 +366,6 @@
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="padding">6</property>
                 <property name="pack_type">end</property>
                 <property name="position">0</property>
               </packing>
@@ -378,6 +377,39 @@
             <property name="position">1</property>
           </packing>
         </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="menu">
+    <property name="visible">True</property>
+    <property name="tearoff_title">&#x6807;&#x9898;</property>
+    <child>
+      <object class="GtkMenuItem" id="menuitem1">
+        <property name="visible">True</property>
+        <property name="label" translatable="yes">&#x6253;&#x5F00;&#x5BA2;&#x6237;&#x7AEF;</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="open_mail_client_cb"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="menuitem4">
+        <property name="visible">True</property>
+        <property name="label" translatable="yes">&#x7CFB;&#x7EDF;&#x8BBE;&#x7F6E;</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="gtk_widget_show" object="config_window"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSeparatorMenuItem" id="menuitem3">
+        <property name="visible">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="menuitem2">
+        <property name="visible">True</property>
+        <property name="label" translatable="yes">&#x9000;&#x51FA;</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="gtk_main_quit"/>
       </object>
     </child>
   </object>

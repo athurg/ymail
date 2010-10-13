@@ -19,8 +19,21 @@ GList *list = NULL;
 void show_popup(unsigned int pos);
 int refresh(gpointer data);
 int mark_read(unsigned int pos, unsigned int max);
+void get_menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, gpointer user_data);
 
 /* 图形界面回调函数 */
+void open_mail_client_cb(GtkWidget *widget, gpointer data)
+{
+	if (fork()) {
+		g_message("Call sylpheed.....");
+		execlp("sylpheed",NULL);
+	}
+}
+
+
+/*
+ * 	配置窗口提交按钮回调函数
+ */
 void config_submit_cb(GtkWidget *widget, gpointer data)
 {
 	GtkWidget *window;
@@ -30,41 +43,44 @@ void config_submit_cb(GtkWidget *widget, gpointer data)
 	g_debug("提交修改");
 }
 
+/*
+ * 	通知区域图标按键回调函数
+ *
+ * 说明：
+ * 	按键通过evnet->button的值来区分，1=左键、2=中键、3=右键……
+ */
 gboolean status_icon_button_press_cb(GtkStatusIcon *status_icon, GdkEventButton *event, gpointer user_data)
 {
-	GtkWidget *window;
+	GtkWidget *widget;
 
 	if(event->button==1){
-		g_debug("左（1）键按下\n");
-	} else if(event->button==2){
-		g_debug("中（2）键按下\n系统退出");
-		gtk_main_quit();
+		show_popup(0);
 	} else if(event->button==3){
-		g_debug("右（2）键按下\n系统配置");
-		window = GTK_WIDGET(gtk_builder_get_object(builder, "config_window"));
-		gtk_widget_show(window);
-	} else {
-		g_debug("其他（%d）键按下\n系统退出", event->button);
+		widget = GTK_WIDGET(gtk_builder_get_object(builder, "menu"));
+		gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL, 0, 0);
 	}
 }
 
+/*
+ * 	Notification信息窗口按钮回调函数
+ *
+ * 说明：
+ * 	按钮通过action来区分，action对应按钮的名称
+ */
 void ntf_action_cb(NotifyNotification *ntf, gchar *action, gpointer user_data)
 {
 	static unsigned int pos=0;
 	unsigned int max=0;
 
-	if (!strcmp(action, "call")) {
-		system("sylpheed");
-		return;
-	} else if(!strcmp(action, "prev")){
+	if(!strcmp(action, "prev")){	//上一页
 		if(pos>10)
 			pos-=10;
 		else
 			pos=0;
-	}else if(!strcmp(action, "next")){
+	}else if(!strcmp(action, "next")){	//下一页
 		if(pos < (g_list_length(list)-10))
 			pos+=10;
-	}else if(!strcmp(action, "read")){
+	}else if(!strcmp(action, "read")){	//标记本页为已读
 		max = g_list_length(list) - pos;
 		max = max > 10 ? 10 : max;
 		mark_read(pos,max);
@@ -74,7 +90,12 @@ void ntf_action_cb(NotifyNotification *ntf, gchar *action, gpointer user_data)
 }
 
 
-/* 功能性函数 */
+/*
+ * 	标记已读函数
+ *
+ * 说明：
+ * 	用于将邮件标记为已读
+ */
 int mark_read(unsigned int pos, unsigned int max)
 {
 	GList *lst;
@@ -163,6 +184,9 @@ int refresh(gpointer data)
 	return TRUE;
 }
 
+/*
+ * 	设置notification提示窗口按钮函数
+ */
 void notification_set_action(unsigned int btn_msk)
 {
 	notify_notification_clear_actions(ntf);
@@ -175,10 +199,11 @@ void notification_set_action(unsigned int btn_msk)
 
 	if(btn_msk & NTF_READ_BTN_MSK)
 		notify_notification_add_action(ntf,"read", "标记已读", ntf_action_cb, NULL, NULL);
-
-	notify_notification_add_action(ntf, "call", "打开sylpheed", ntf_action_cb, NULL, NULL);
 }
 
+/*
+ * 	显示notification提示窗口函数
+ */
 void show_popup(unsigned int pos)
 {
 	GList *lst;
@@ -237,7 +262,7 @@ int main(int argc, char **argv)
 
 	//图形界面初始化
 	builder = gtk_builder_new();
-	gtk_builder_add_from_file(builder, "ui.glade", NULL);
+	gtk_builder_add_from_file(builder, "/home/athurg/所有项目/ymail/ui.glade", NULL);
 	gtk_builder_connect_signals(builder, NULL);
 
 	status_icon = GTK_STATUS_ICON(gtk_builder_get_object(builder, "status_icon"));
